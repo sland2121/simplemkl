@@ -1,9 +1,6 @@
 """
-Author: Sayeri Lala
-Date: 1-14-16
-
 Code testing simpleMKL implementation.
-This code was adapted from gitrowbridge:
+This code was primarily implemented by gjtrowbridge (with some modification):
 https://github.com/gjtrowbridge/simple-mkl-python/blob/master/run_simpleMKL_for_ionosphere.py.
 
 simpleMKL implementation details:
@@ -15,7 +12,6 @@ simpleMKL matlab version: http://asi.insa-rouen.fr/enseignants/~arakoto/code/mkl
 import numpy as np
 import working_algo1_al as algo1
 import working_kernel_helpers as k_helpers
-
 
 # pre-processing
 data_file = 'ionosphere.data'
@@ -32,7 +28,7 @@ ytrain = y[:200]  # first 200 labels
 xtest = x[200:]  # example 201 onwards
 ytest = y[200:]  # label 201 onwards
 
-# normalize data
+# modification: normalize data
 xtrain_mean_std=(np.mean(xtrain,axis=0),np.std(xtrain,axis=0))
 xtest_mean_std=(np.mean(xtest,axis=0),np.std(xtest,axis=0))
 
@@ -41,11 +37,9 @@ xtest=(xtest-np.ones(xtest.shape)*np.mean(xtest,axis=0))/np.std(xtest,axis=0)
 
 
 #gamma = 1.0/d
-intercept = 0
 
 
 kernel_functions=[
-    k_helpers.create_rbf_kernel(4.0),
     k_helpers.create_rbf_kernel(5.0),
     k_helpers.create_rbf_kernel(5.0)
 ]
@@ -66,8 +60,8 @@ for m,kernel_func in enumerate(kernel_functions):
     trace=np.trace(kernel_matrices[m])
     kernel_matrices[m]=kernel_matrices[m]*(1.0/trace) 
       
-
-weights,final_K,J,alpha,duality_gap=algo1.find_kernel_weights(xtrain,kernel_matrices,ytrain,C=10)
+k_init=np.array([1.0,0])
+weights,final_K,J,alpha,duality_gap=algo1.find_kernel_weights(k_init,kernel_matrices,10,ytrain)
 
 print 'weights: ',weights
 print 'objective value: ', J

@@ -18,7 +18,13 @@ import numpy as np
 import working_helpers_al as helpers
 import working_kernel_helpers as k_helpers
 
-def find_kernel_weights(data,kernel_matrices, y,C):
+"""
+k_init: numpy array of size len(kernel_matrices) summing to 1
+kernel_matrices: list of kernel matrices
+C: regularization parameter in SVM
+y: labels for train points 
+"""
+def find_kernel_weights(k_init,kernel_matrices,C,y):
     
     for m in kernel_matrices:
         assert m.shape == (y.shape[0],y.shape[0])
@@ -26,7 +32,7 @@ def find_kernel_weights(data,kernel_matrices, y,C):
     M = len(kernel_matrices)
 
     #initial weights of each kernel
-    d = np.ones(M) / M
+    d = k_init
 
     #Creates y matrix for use in SVM later
     y_mat = np.outer(y, y)
