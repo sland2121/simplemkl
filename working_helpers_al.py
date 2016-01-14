@@ -6,6 +6,9 @@ Helper functions used in working_algo1_al.py.
 
 These helper functions were implemented based
 on matlab implementation of simpleMKL: http://asi.insa-rouen.fr/enseignants/~arakoto/code/mklindex.html
+
+compute_dJ, get_armijos_step_size were implemented by gjtrowbridge:
+https://github.com/gjtrowbridge/simple-mkl-python/blob/master/helpers.py
 """
 
 import numpy as np
@@ -59,7 +62,7 @@ def update_descent_direction(d,D,mu):
     if mu == 0:
         D[mu]=-np.sum(D[mu+1:])
     else:
-        D[mu] = -np.sum(D[0:mu-1],D[mu+1:])
+        D[mu] = -np.sum(np.concatenate((D[0:mu-1],D[mu+1:]),0))
         
     return D
     
