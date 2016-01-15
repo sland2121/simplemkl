@@ -15,7 +15,16 @@ import numpy as np
 import working_kernel_helpers as k_helpers
 from sklearn import svm
 
+weight_threshold=1e-08
 
+def fix_weight_precision(d):
+    new_d=d.copy()
+    # zero out weights below threshold
+    new_d[np.where(d<weight_threshold)[0]]=0
+    # normalize
+    new_d=new_d/np.sum(new_d)
+    return new_d
+        
 def compute_J_SVM(K,y_mat,C):
     clf=svm.SVC(C=C,kernel='precomputed')    
     clf.fit(K,y_mat[:,0])
@@ -57,13 +66,13 @@ def compute_descent_direction(d, dJ,mu):
     return D
 
 def update_descent_direction(d,D,mu):
-    tmp_ind=np.intersect1d(np.where(D<=0)[0],np.where(d<=0)[0])
+    tmp_ind=np.intersect1d(np.where(D<=0)[0],np.where(d<=weight_threshold)[0])
     D[tmp_ind]=0
+    
     if mu == 0:
         D[mu]=-np.sum(D[mu+1:])
     else:
-        D[mu] = -np.sum(np.concatenate((D[0:mu-1],D[mu+1:]),0))
-        
+        D[mu] = -np.sum(np.concatenate((D[0:mu],D[mu+1:]),0))   
     return D
     
 def compute_max_admissible_gamma(d,D):
