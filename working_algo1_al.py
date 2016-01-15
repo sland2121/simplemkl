@@ -24,6 +24,7 @@ kernel_matrices: list of kernel matrices
 C: regularization parameter in SVM
 y: labels for train points 
 """
+
 def find_kernel_weights(k_init,kernel_matrices,C,y):
     
     for m in kernel_matrices:
@@ -44,19 +45,20 @@ def find_kernel_weights(k_init,kernel_matrices,C,y):
     # initial alphas
     combined_kernel_matrix = k_helpers.get_combined_kernel(kernel_matrices, d)
     alpha, J= helpers.compute_J_SVM(combined_kernel_matrix, y_mat,C)
+##    print 'initial alpha, J: ',alpha, J
     
     while(not stop_state):
-        #print "iteration:",iteration
-        #print "d:",d
+##	print "iteration:",iteration
+##	print "d:",d
         
 
         dJ = helpers.compute_dJ(kernel_matrices, y_mat, alpha)
-        #print 'gradient before entering while loop'
-        #print dJ
+##        print 'gradient before entering while loop'
+##        print dJ
         
         mu=np.argmax(d)
         D = helpers.compute_descent_direction(d, dJ,mu)
-
+##        print 'initial descent: ',D
         gamma_max=helpers.compute_max_admissible_gamma(d,D)
         # done in matlab version
         if gamma_max>0.1:
@@ -64,40 +66,45 @@ def find_kernel_weights(k_init,kernel_matrices,C,y):
             
         J_cross=0
         J_prev=J
+
         while (J_cross < J):
             
+##            print 'cost min: ',J
+##            print 'cost max: ',J_cross
             d_cross = d + gamma_max*D
             combined_kernel_matrix_cross = k_helpers.get_combined_kernel(kernel_matrices, d_cross)
             alpha_cross, J_cross= helpers.compute_J_SVM(combined_kernel_matrix_cross, y_mat,C)
-            
+##            print "updated cost max: ",J_cross
+
             if J_cross<J:
                 J=J_cross
                 d = d_cross.copy()
+##                print 'updated weights: ', d
                 alpha=alpha_cross.copy()
                 # update descent
+##                print 'descent before update: ',D
                 D=helpers.update_descent_direction(d,D,mu)
+##                print 'updated descent: ', D
                 
                 # gamma_max=helpers.compute_max_admissible_gamma(d,D)
-                
+##                
                 tmp_ind=np.where(D<0)[0]      
                 if tmp_ind.shape[0]>0:
                     gamma_max=np.min(-(np.divide(d[tmp_ind],D[tmp_ind])))
                     J_cross=0
                 else:
                     gamma_max=0
-        
         # line-search             
         gamma, alpha, J=helpers.compute_gamma_linesearch(0,gamma_max,J,J_cross,
                                                d,D,kernel_matrices, J_prev,y_mat,alpha)
-        #print 'descent',D                                      
-        #print 'gamma after line search',gamma
+##        print 'descent',D                                      
+##        print 'gamma after line search',gamma
         d = d + gamma * D
-        #print 'weights after linesearch',d
+        d = helpers.fix_weight_precision(d)
+##        print 'updated weights: ',d
         
-        # compute duality gap for terminating condition
-#        combined_kernel_matrix = k_helpers.get_combined_kernel(kernel_matrices, d)
-#        alpha_curr_d, J_curr_d = helpers.compute_J_SVM(combined_kernel_matrix, y_mat,C,-90)
-
+##        print 'weights after linesearch',d
+        
 #        print 'support vectors used to compute current gradient'
 #        print alpha
         dJ_curr_d = helpers.compute_dJ(kernel_matrices, y_mat, alpha)
@@ -110,14 +117,12 @@ def find_kernel_weights(k_init,kernel_matrices,C,y):
 ##        print 'numerator', (J+np.max(-dJ_curr_d) -np.sum(alpha))
         
         duality_gap=(J+np.max(-dJ_curr_d) -np.sum(alpha))/J
-        #print 'duality gap: ',duality_gap
+##        print 'duality gap: ',duality_gap
         if duality_gap<0.01:
             stop_state=True
-        """
-        duality_gap=J_curr_d+0.5*alpha_curr_d.dot(np.multiply(combined_kernel_matrix,y_mat)).dot(alpha_curr_d.T)\
-                    -np.sum(alpha_curr_d)
-        
-        """
+
         
         iteration += 1
+
+        
     return (d,k_helpers.get_combined_kernel(kernel_matrices, d),J,alpha,duality_gap)
