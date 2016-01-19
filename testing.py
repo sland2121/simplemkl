@@ -4,8 +4,9 @@ testing script for working_algo1_al.py (simpleMKL alg implementation)
 partition on input:
 1. kernel_functions
 -# kernel functions: 1, 2, 3+
--types of kernel functions: gaussians, poly
--edge case: equivalent kernels 
+-types of kernel functions: gaussians, poly (not necessary because the type
+of kernel does not affect simplemkl algorithm)
+-case: equivalent kernels, different kernels
 
 2. weight initializations (kinit):
 -uniform
@@ -20,13 +21,15 @@ partition on input:
 
 test cases:
 1. 1 kernel (gaussian(5)). output weight=1.0
-2. 4 kernels: 
-	-4 different gaussians (learning occurs)
-		-kinit: uniform, [1 0 0], [0 1 0], [0 0 1]
+2. 4 kernels:
+        -4 equivalent (no learning occurs):
+		-kinit=uniform,non-uniform.
+		-C: 1,10,100,1000
+	-4 different kernels (learning occurs)
+		-kinit: uniform, non-uniform:[1 0 0], [0 1 0], [0 0 1]
 		-C: 1, 10, 100, 1000
 		
-	-4 equivalent (no learning occurs):
-		-kinit=[0.5 0.5 0]. output weight=[0.333 0.333 0.333]
+	
 """
 import numpy as np
 import working_algo1_al as algo1
@@ -123,14 +126,13 @@ np.testing.assert_array_almost_equal(weights,np.array([0,1,0]))
 kernel_functions=[k_helpers.create_rbf_kernel(1.0),k_helpers.create_rbf_kernel(3.0),
                   k_helpers.create_rbf_kernel(5.0),k_helpers.create_rbf_kernel(10.0)]
 kernel_matrices=construct_gram_cube(xtrain,kernel_functions)
-C=10
 
+C=10
 #case a: uniform weights
 print 'case 4a'
 k_init=np.array([0.25,0.25,0.25,0.25])
 weights,final_K,J,alpha,duality_gap=algo1.find_kernel_weights(k_init,kernel_matrices,C,ytrain)
 np.testing.assert_array_almost_equal(weights,np.array([0,1,0,0]))
-
 
 #case b: non-uniform weights
 print 'case 4b'
@@ -138,5 +140,23 @@ k_init=np.array([0,0,0,1])
 weights,final_K,J,alpha,duality_gap=algo1.find_kernel_weights(k_init,kernel_matrices,C,ytrain)
 np.testing.assert_array_almost_equal(weights,np.array([0,1,0,0]))
 
+# testing C values
+k_init=np.array([1,0,0,0])
+print "C=1"
+C=1
+weights,final_K,J,alpha,duality_gap=algo1.find_kernel_weights(k_init,kernel_matrices,C,ytrain)
+#np.testing.assert_array_almost_equal(weights,np.array([0,0.5159,0.4247,0.0594]))
+
+print "C=100"
+C=100
+weights,final_K,J,alpha,duality_gap=algo1.find_kernel_weights(k_init,kernel_matrices,C,ytrain)
+#np.testing.assert_array_almost_equal(weights,np.array([0,1,0,0]))
+
+
+print "C=1000"
+C=1000
+alpha=algo1.find_kernel_weights(k_init,kernel_matrices,C,ytrain)
+weights,final_K,J,alpha,duality_gap=algo1.find_kernel_weights(k_init,kernel_matrices,C,ytrain)
+#np.testing.assert_array_almost_equal(weights,np.array([0.62210,0.3779,0,0]))
 
 print 'All test cases passed.'
