@@ -61,7 +61,6 @@ def compute_J_SVM(K,y_mat,C):
 def compute_descent_direction(d, dJ,mu):
     # normalizing the gradient
     norm_grad=dJ.dot(dJ)
-
     grad_new=(dJ*1.0)/(norm_grad**0.5)
     grad_new = grad_new-grad_new[mu]
     

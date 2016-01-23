@@ -206,3 +206,4 @@ print weights
 #np.testing.assert_array_almost_equal(weights,np.array([0.62210,0.3779,0,0]))
 
 print 'All test cases passed.'
+

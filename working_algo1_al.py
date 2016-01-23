@@ -137,12 +137,12 @@ def find_kernel_weights(k_init,kernel_matrices,C,y):
 ##        print np.max(-dJ_curr_d)
 ##        print -np.sum(alpha)
         
+        # stopping criterion
         duality_gap=(J+np.max(-dJ_curr_d) -np.sum(alpha))/J
         # print 'duality gap: ',duality_gap
         if duality_gap<duality_gap_threshold:
             stop_state=True
 
-        
         iteration += 1
 
         
